@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Stacks — a catalog that reads you back</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --wood:      #2B2118;
+    --wood-dark: #1D1610;
+    --parchment: #EFE6D3;
+    --parchment-2:#E4D8BE;
+    --ink:       #241F19;
+    --ink-soft:  #5B5142;
+    --brass:     #B4913F;
+    --brass-dim: #8A6F30;
+    --stamp:     #8E3B34;
+    --shadow:    rgba(0,0,0,0.35);
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+
+  body{
+    background: var(--wood);
+    background-image:
+      radial-gradient(1200px 600px at 15% -10%, rgba(180,145,63,0.10), transparent 60%),
+      repeating-linear-gradient(90deg, rgba(0,0,0,0.10) 0px, rgba(0,0,0,0.10) 1px, transparent 1px, transparent 64px);
+    color: var(--parchment);
+    font-family: 'Spectral', Georgia, serif;
+    min-height: 100vh;
+  }
+
+  .wrap{ max-width: 920px; margin: 0 auto; padding: 56px 24px 80px; }
+
+  header{ text-align:center; margin-bottom: 40px; }
+
+  .eyebrow{
+    font-family:'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--brass);
+    margin-bottom: 14px;
+  }
+
+  h1{
+    font-size: clamp(36px, 5vw, 54px);
+    font-weight: 600;
+    margin: 0 0 10px;
+    letter-spacing: 0.5px;
+  }
+  h1 em{ font-style:italic; color: var(--brass); font-weight:500; }
+
+  .subtitle{
+    color: #C9BFA9;
+    font-size: 16px;
+    font-style: italic;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* --- request slip / search --- */
+  .slip{
+    background: var(--parchment);
+    color: var(--ink);
+    border-radius: 3px;
+    padding: 26px 28px 22px;
+    margin: 40px 0 8px;
+    box-shadow: 0 18px 40px var(--shadow), 0 1px 0 rgba(255,255,255,0.06) inset;
+    position: relative;
+  }
+  .slip::before{
+    content:"";
+    position:absolute; top:0; left:24px; right:24px; height:1px;
+    background: repeating-linear-gradient(90deg, var(--ink-soft) 0 6px, transparent 6px 12px);
+    opacity:0.35;
+  }
+  .slip-label{
+    font-family:'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--stamp);
+    margin-bottom: 10px;
+  }
+  form{ display:flex; gap: 10px; }
+  input[type="text"]{
+    flex:1;
+    border: none;
+    border-bottom: 2px solid var(--ink);
+    background: transparent;
+    font-family:'Spectral', serif;
+    font-size: 19px;
+    font-style: italic;
+    color: var(--ink);
+    padding: 6px 4px 10px;
+    outline: none;
+  }
+  input[type="text"]::placeholder{ color: var(--ink-soft); opacity:0.7; }
+  button{
+    font-family:'Space Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    background: var(--stamp);
+    color: var(--parchment);
+    border: none;
+    border-radius: 2px;
+    padding: 0 22px;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+  }
+  button:hover{ background:#7a322c; }
+  button:active{ transform: scale(0.97); }
+  button:disabled{ opacity:0.5; cursor: default; }
+
+  .meta-strip{
+    display:flex; justify-content:space-between; align-items:center;
+    font-family:'Space Mono', monospace;
+    font-size: 11.5px;
+    color: #B7AC94;
+    margin: 14px 4px 0;
+    min-height: 16px;
+  }
+  .meta-strip .subject-tag{
+    color: var(--brass);
+  }
+
+  /* --- results --- */
+  #status{
+    text-align:center;
+    font-style: italic;
+    color: #C9BFA9;
+    margin: 50px 0;
+    font-size: 15px;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 22px;
+    margin-top: 30px;
+  }
+
+  .card{
+    background: var(--parchment);
+    color: var(--ink);
+    border-radius: 2px;
+    padding: 20px 20px 18px;
+    position: relative;
+    box-shadow: 0 10px 24px var(--shadow);
+    display:flex;
+    flex-direction:column;
+    min-height: 230px;
+  }
+  .card::after{
+    /* dog-ear fold */
+    content:"";
+    position:absolute; top:0; right:0;
+    width:0; height:0;
+    border-style: solid;
+    border-width: 0 22px 22px 0;
+    border-color: transparent var(--parchment-2) transparent transparent;
+    filter: drop-shadow(-1px 1px 1px rgba(0,0,0,0.25));
+  }
+
+  .call-number{
+    font-family:'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--brass-dim);
+    margin-bottom: 10px;
+  }
+
+  .card h3{
+    font-size: 19px;
+    font-weight: 600;
+    margin: 0 0 4px;
+    line-height:1.25;
+  }
+  .card .byline{
+    font-style: italic;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+  }
+  .card .desc{
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--ink);
+    margin-bottom: 12px;
+    flex-grow: 1;
+  }
+
+  .why{
+    font-family:'Space Mono', monospace;
+    font-size: 11.5px;
+    line-height:1.55;
+    color: var(--stamp);
+    border-top: 1px dashed rgba(36,31,25,0.3);
+    padding-top: 10px;
+    margin-top: auto;
+  }
+  .why::before{ content:"⌐ librarian's note — "; opacity:0.7; }
+
+  .stamp-score{
+    position:absolute;
+    bottom: 14px; right: 14px;
+    font-family:'Space Mono', monospace;
+    font-size: 10.5px;
+    color: var(--stamp);
+    border: 1.5px solid var(--stamp);
+    border-radius: 50%;
+    width: 46px; height:46px;
+    display:flex; align-items:center; justify-content:center;
+    transform: rotate(-9deg);
+    opacity: 0.75;
+    text-align:center;
+    line-height:1.1;
+  }
+
+  .empty, .error{
+    text-align:center;
+    color:#C9BFA9;
+    font-style: italic;
+    margin: 60px auto;
+    max-width: 380px;
+    line-height:1.6;
+  }
+  .error{ color: #E3B3AE; }
+
+  footer{
+    text-align:center;
+    margin-top: 60px;
+    font-family:'Space Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 1px;
+    color: #7d7361;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="eyebrow">Reading Room · Semantic Catalog</div>
+      <h1>The <em>Stacks</em></h1>
+      <p class="subtitle">Describe the book you're after — mood, plot, vibe — and the catalog reads between the lines.</p>
+    </header>
+
+    <div class="slip">
+      <div class="slip-label">Request Slip</div>
+      <form id="search-form">
+        <input type="text" id="query" placeholder="a slow-burn political fantasy with multiple points of view…" autocomplete="off" autofocus>
+        <button type="submit" id="submit-btn">Search</button>
+      </form>
+      <div class="meta-strip">
+        <span id="subject-tag"></span>
+        <span id="stats"></span>
+      </div>
+    </div>
+
+    <div id="status" class="empty">The catalog is waiting. Describe a book above to begin.</div>
+    <div class="grid" id="results"></div>
+
+    <footer>retrieval-augmented · powered locally · no data leaves this machine</footer>
+  </div>
+
+<script>
+const form = document.getElementById('search-form');
+const input = document.getElementById('query');
+const btn = document.getElementById('submit-btn');
+const status = document.getElementById('status');
+const results = document.getElementById('results');
+const subjectTag = document.getElementById('subject-tag');
+const stats = document.getElementById('stats');
+
+function callNumber(book, index){
+  const genreCode = (book.genre || 'GEN').replace(/[^A-Za-z]/g,'').slice(0,3).toUpperCase();
+  const yearCode = book.year ? String(book.year).slice(-2) : '00';
+  return `${genreCode}.${yearCode}—${String(index+1).padStart(2,'0')}`;
+}
+
+async function runSearch(query){
+  status.className = '';
+  status.textContent = 'Searching the stacks…';
+  status.style.display = 'block';
+  results.innerHTML = '';
+  subjectTag.textContent = '';
+  stats.textContent = '';
+  btn.disabled = true;
+
+  try{
+    const res = await fetch(`/api/recommend?q=${encodeURIComponent(query)}`);
+    const data = await res.json();
+
+    if(!res.ok){
+      status.className = 'error';
+      status.textContent = data.error || 'Something went wrong.';
+      return;
+    }
+
+    if(data.detected_genre_filter){
+      subjectTag.textContent = `subject heading: ${data.detected_genre_filter}`;
+    }
+    stats.textContent = `${data.candidates_retrieved} traced · ${data.latency_seconds}s · ${data.used_llm ? 'LLM-assisted' : 'catalog logic'}`;
+
+    if(!data.recommendations || data.recommendations.length === 0){
+      status.className = 'empty';
+      status.textContent = 'No matches found on the shelves for that request. Try rephrasing.';
+      return;
+    }
+
+    status.style.display = 'none';
+    results.innerHTML = data.recommendations.map((book, i) => `
+      <div class="card">
+        <div class="call-number">${callNumber(book, i)}</div>
+        <h3>${escapeHtml(book.title)}</h3>
+        <div class="byline">${escapeHtml(book.author)} · ${book.year || 'n/a'} · ${escapeHtml(book.genre)}</div>
+        <div class="desc">${escapeHtml(book.description || '')}</div>
+        <div class="why">${escapeHtml(book.reason || '')}</div>
+        <div class="stamp-score">${Math.round((book.similarity || 0) * 100)}%</div>
+      </div>
+    `).join('');
+  }catch(err){
+    status.className = 'error';
+    status.textContent = 'Could not reach the catalog. Is the server running?';
+  }finally{
+    btn.disabled = false;
+  }
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const q = input.value.trim();
+  if(q) runSearch(q);
+});
+</script>
+</body>
+</html>

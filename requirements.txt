@@ -1,0 +1,17 @@
+# Core (always required — powers the default "tfidf" demo backend)
+scikit-learn>=1.3
+numpy>=1.24
+
+# Browser UI (app.py)
+flask>=3.0
+
+# Production backend (VECTOR_BACKEND=chroma): real semantic embeddings + vector DB
+chromadb>=0.5
+sentence-transformers>=2.7
+
+# LLM agent (optional — falls back to a template-based agent if not installed
+# or if ANTHROPIC_API_KEY is not set)
+anthropic>=0.34
+
+# Testing
+pytest>=7.4
